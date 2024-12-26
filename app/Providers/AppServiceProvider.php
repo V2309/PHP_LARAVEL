@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Category;
 use App\Models\Group;
+use App\Models\Blog;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,11 +27,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         $categories = Category::all();
-       $groups = Group::with('category')->get();
-
+        $groups = Group::with('category')->get();
+      
         view()->share([
          'categories' => $categories,
             'groups' => $groups,
-        ]);
+           
+       ]);
     }
 }

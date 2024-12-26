@@ -22,7 +22,6 @@ class Product extends Model
         'id_nhomsp',
        
     ];
-   
     public function category()
     {
         return $this->belongsTo(Category::class, 'id_loai_sanpham', 'id_loaisp');
@@ -31,7 +30,6 @@ class Product extends Model
     {
         return $this->belongsTo(Group::class, 'id_nhomsp', 'id_nhomsp');
     }
-    
     public function orderDetail()
     {
         return $this->hasMany(OrderDetail::class, 'id_sanpham', 'id_sanpham');

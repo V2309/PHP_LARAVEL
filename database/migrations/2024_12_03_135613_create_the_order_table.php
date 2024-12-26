@@ -17,7 +17,6 @@ class CreateTheOrderTable extends Migration
             $table->integerIncrements('id_donhang');
             $table->string('tendonhang',200);
             $table->string('hinhthucthanhtoan',200);
-            $table->string('trangthai',200);
             $table->string('tenkhachhang',100);
             $table->string('diachi',500);
             $table->string('sdt',20);

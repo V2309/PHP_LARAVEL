@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCategoryTable extends Migration
+class AddTrangthaiToCategoryTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,9 @@ class CreateCategoryTable extends Migration
      */
     public function up()
     {
-        Schema::create('category', function (Blueprint $table) {
-            $table->string('id_loaisp', 20);
-            $table->primary('id_loaisp');
-            $table->string('tenloaisp', 200);
-            $table->string('anh_loaisp', 50);
-           $table->timestamps();
+        Schema::table('category', function (Blueprint $table) {
+            $table->enum('trangthai', ['Hiện', 'Ẩn'])->default('Hiện');
+            //
         });
     }
 
@@ -29,6 +26,9 @@ class CreateCategoryTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('category');
+        Schema::table('category', function (Blueprint $table) {
+            //
+            $table->dropColumn('trangthai');
+        });
     }
 }

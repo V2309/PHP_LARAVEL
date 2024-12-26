@@ -1,5 +1,12 @@
 @extends('layouts.admin_layout')
 @section('content')
+<style>
+    .status-toggle:hover {
+       
+        cursor: pointer;
+    
+    }
+</style>
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -82,11 +89,12 @@
                         <td>{{$category->tenloaisp}}</td>
 
                         <td>
-                            @if ($category->trangthai == 1)
-                                <span class="badge badge-success">Active</span>
-                            @else
-                                <span class="badge badge-danger">Inactive</span>
-                            @endif
+                            <span style="font-size: 16px" class="badge status-toggle {{ $category->trangthai === 'Hiện' ? 'badge-success' : 'badge-danger' }}" 
+                                data-id="{{ $category->id_loaisp }}" 
+                                id="status-{{ $category->id_loaisp }}">
+                                {{ $category->trangthai }}
+                          </span>
+                           
                         <td>
 
                             <img src="{{ asset('backend/images/'.$category->anh_loaisp) }}" alt="" style="width: 100px; height: 100px;">
@@ -134,13 +142,7 @@
                             <label for="edit_tenloaisp">Tên loại sản phẩm</label>
                             <input type="text" class="form-control" id="edit_tenloaisp" name="tenloaisp" required>
                         </div>
-                        <div class="form-group">
-                            <label for="edit_trangthai">Trạng thái</label>
-                            <select name="trangthai" id="edit_trangthai" class="form-control" required>
-                                <option value="0" {{ $category->trangthai == 0 ? 'selected' : '' }}>Inactive</option>
-                                <option value="1" {{ $category->trangthai == 1 ? 'selected' : '' }}>Active</option>
-                            </select>
-                        </div>
+                      
                         <div class="form-group">
                             <label for="edit_anh_loaisp">Ảnh loại sản phẩm</label>
                             <input type="file" class="form-control" id="edit_anh_loaisp" name="anh_loaisp">
@@ -150,11 +152,56 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
     <!-- /.card -->
+
+
+
+
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Bắt sự kiện click vào trạng thái
+            $('.status-toggle').on('click', function () {
+                const id_loaisp = $(this).data('id');
+                const statusElement = $(this);
+    
+                $.ajax({
+                    url: "{{ route('admin.toggleStatus', '') }}/" + id_loaisp,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            // Cập nhật giao diện
+                            const newStatus = response.trangthai;
+                            if (newStatus === 'Hiện') {
+                                statusElement.text('Hiện')
+                                             .removeClass('bg-danger')
+                                             .addClass('bg-success');
+                            } else {
+                                statusElement.text('Ẩn')
+                                             .removeClass('bg-success')
+                                             .addClass('bg-danger');
+                            }
+                        } else {
+                            alert('Có lỗi xảy ra khi thay đổi trạng thái.');
+                        }
+                    },
+                    error: function () {
+                        alert('Không thể thay đổi trạng thái.');
+                    }
+                });
+            });
+        });
+    </script> 
+
+
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
    <script>
+    // delete category
       $(document).ready(function() {
         $('.delete-category').click(function() {
             var id_loaisp = $(this).data('id');

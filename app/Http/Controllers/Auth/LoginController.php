@@ -33,7 +33,7 @@ class LoginController extends Controller
             return $roleMapping->role->rolename; // Truy xuất tên role từ bảng RoleMaster
         })->toArray();
 
-        if (in_array('Admin', $roleNames) || in_array('User', $roleNames) || in_array('Customer', $roleNames)) {
+        if (in_array('Admin', $roleNames)) {
             return redirect()->route('dashboard'); // Chuyển hướng trang quản trị
         }
      

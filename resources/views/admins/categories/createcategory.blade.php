@@ -53,10 +53,10 @@
                             <label for="trangthai" class="col-md-4 col-form-label text-md-end">{{ __('Trạng thái:') }}</label>
                             <div class="col-md-6">
 
-                            <select name="trangthai"  class="form-control">
+                            {{-- <select name="trangthai"  class="form-control">
                                 <option value="1">Hiện</option>
                                 <option value="0">Ẩn</option>   
-                            </select>
+                            </select> --}}
 
                             
                                 @error('trangthai')

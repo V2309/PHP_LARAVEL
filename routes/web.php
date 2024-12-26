@@ -8,6 +8,8 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ShoppingCartController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\FacebookAuthController;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +22,16 @@ use App\Http\Controllers\GoogleAuthController;
 |
 */
 Auth::routes();
-
-
+// Thanh toán bằng zalopay
+Route::post('/payWithZaloPay', [ShoppingCartController::class, 'payWithZaloPay'])->name('payWithZaloPay');
+Route::post('/zalopay/callback', [ShoppingCartController::class, 'handleCallback'])->name('zalopay.callback');
+// log in with google
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google-auth');
+Route::get('/auth/google/call-back', [GoogleAuthController::class, 'callbackGoogle']);
+// log in with facebook
+Route::get('/auth/facebook', [FacebookAuthController::class, 'redirect'])->name('facebook-auth');
+Route::get('/auth/facebook/call-back', [FacebookAuthController::class, 'callbackFacebook']);
 // Route cho trang người dùng
- 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/productcategory', [ProductController::class, 'productCategory']);
 Route::get('/productcategory/{id_nhomsp}', [ProductController::class, 'productcategory'])->name('productcategory');
@@ -32,12 +40,9 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('/home/about', [HomeController::class, 'about'])->name('home.about');
 Route::get('/support', [HomeController::class, 'support']);
 Route::get('/blog', [BlogController::class, 'blog']);
-Route::get('/blogDetail', [BlogController::class, 'blogDetail']);
+Route::get('/blogDetail/{id}', [BlogController::class, 'blogDetail'])->name('blogDetail');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 
-// log in
-Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google-auth');
-Route::get('/auth/google/call-back', [GoogleAuthController::class, 'callbackGoogle']);
 // shopping cart
 // hiện thị giỏ hàng
 Route::get('/cartView', [ShoppingCartController::class, 'cartView'])->name('cartView');
@@ -89,6 +94,8 @@ Route::delete('/delete-category/{id_loaisp}', [AdminController::class, 'deleteCa
 Route::get('/get-category/{id_loaisp}', [AdminController::class, 'getCategory'])->name('getCategory');
 // cập nhật thông tin loại sản phẩm
 Route::post('/update-category/{id_loaisp}', [AdminController::class, 'updateCategory'])->name('updateCategory');
+// toaggle 
+Route::post('/admin/toggle-status/{id_loaisp}', [AdminController::class, 'toggleStatus'])->name('admin.toggleStatus');
 
 // group
 // hiển thị form thêm nhóm sản phẩm
@@ -104,7 +111,7 @@ Route::post('/update-group/{id_nhomsp}', [AdminController::class, 'updateGroup']
 // order 
 // hiển thị danh sách đơn hàng
 Route::get('/orderlists', [AdminController::class, 'orderlists'])->name('orderlists');
-Route::get('/confirmOrder/{id_donhang}', [AdminController::class, 'confirmOrder'])->name('confirmOrder');
+Route::post('/confirmOrder/{id_donhang}', [AdminController::class, 'confirmOrder'])->name('confirmOrder');
 Route::get('/get-order-details/{id}', [AdminController::class, 'getOrderDetails']);
 });
 

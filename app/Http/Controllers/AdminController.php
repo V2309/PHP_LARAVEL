@@ -39,6 +39,7 @@ class AdminController extends Controller
     // xu ly cac chuc nang cua product
      public function productlists()
      {   
+       // $products=Product::all();
         $products=Product::with(['category','group' ])->paginate(3);
         $categories=Category::all();
         $groups=Group::all();
@@ -48,7 +49,6 @@ class AdminController extends Controller
         public function productDetail($id_sanpham)
     {  
         
-
         $product = Product::with(['category', 'group'])->findOrFail($id_sanpham);
 
         // Trả về view chi tiết sản phẩm
@@ -184,6 +184,7 @@ class AdminController extends Controller
     public function categorylists()
     {
         $categories=Category::paginate(3);
+    
         return view('admins.categories.categorylists',compact('categories'));
     }
     // hien thi view create category
@@ -197,7 +198,6 @@ class AdminController extends Controller
         $request->validate([
             'id_loaisp' => 'required',
             'tenloaisp' => 'required',
-            'trangthai' => 'required',
             'anh_loaisp' => 'required|image'
         ]);
         $filename = null;
@@ -213,8 +213,8 @@ class AdminController extends Controller
         Category::create([
             'id_loaisp' => $request->id_loaisp,
             'tenloaisp' => $request->tenloaisp,
-            'trangthai' => $request->trangthai,
-            'anh_loaisp' => $filename
+            'anh_loaisp' => $filename,
+    
         ]);
 
         return redirect()->route('categorylists')->with('success', 'Category created successfully');
@@ -231,15 +231,20 @@ class AdminController extends Controller
             return response()->json(['error' => 'Category not found'], 404);
         }
     }
+
     // lay thong tin category
     public function getCategory($id_loaisp)
     {
-    $category = Category::find($id_loaisp);
-    if ($category) {
-        return response()->json(['success' => true, 'category' => $category]);
-    } else {
-        return response()->json(['success' => false, 'error' => 'Category not found'], 404);
-    }
+        $category = Category::find($id_loaisp);
+        
+        if ($category) {
+            return response()->json([
+                'success' => true,
+                'category' => $category
+            ]);
+        } else {
+            return response()->json(['success' => false, 'error' => 'Category not found'], 404);
+        }
 }
 
  public function updateCategory(Request $request, $id_loaisp)
@@ -247,15 +252,15 @@ class AdminController extends Controller
      $category = Category::find($id_loaisp);
      if ($category) {
          $category->tenloaisp = $request->tenloaisp;
-         $category->trangthai = $request->trangthai;
+        // $category->trangthai = $request->trangthai;
          if ($request->hasFile('anh_loaisp')) {
             // Xóa ảnh cũ nếu có
-            if ($category->anh_loaisp && file_exists(public_path('backend/images/' . $category->anh_loaisp))) {
-                unlink(public_path('backend/images/' . $category->anh_loaisp));
-            }
-            if ($category->anh_loaisp && file_exists(public_path('frontend/images/' . $category->anh_loaisp))) {
-                unlink(public_path('frontend/images/' . $category->anh_loaisp));
-            }
+         //   if ($category->anh_loaisp && file_exists(public_path('backend/images/' . $category->anh_loaisp))) {
+         //       unlink(public_path('backend/images/' . $category->anh_loaisp));
+         //   }
+         //   if ($category->anh_loaisp && file_exists(public_path('frontend/images/' . $category->anh_loaisp))) {
+        //        unlink(public_path('frontend/images/' . $category->anh_loaisp));
+        //    }
 
             // Lưu ảnh mới
             $file = $request->file('anh_loaisp');
@@ -268,9 +273,24 @@ class AdminController extends Controller
           $category->save();
          return response()->json(['success' => 'Category updated successfully']);
     } else {
-         return response()->json(['error' => 'Category not found'], 404);
+        return redirect()->route('categorylists')->with('error', 'Category not found');
      }
  }
+ // toggle status
+ public function toggleStatus(Request $request, $id_loaisp)
+ {
+     $category = Category::findOrFail($id_loaisp);
+ 
+     // Thay đổi trạng thái
+     $category->trangthai = $category->trangthai === 'Hiện' ? 'Ẩn' : 'Hiện';
+     $category->save();
+ 
+     return response()->json([
+         'success' => true,
+         'trangthai' => $category->trangthai,
+     ]);
+ }
+
     // xu ly cac chuc nang cua group
     public function grouplists()
     {
@@ -291,6 +311,8 @@ class AdminController extends Controller
         ]);
 
         Group::create([
+          //  $request->all(),
+
             'id_nhomsp' => $request->id_nhomsp,
             'tennhom' => $request->tennhom,
             'id_loaisp' => $request->id_loaisp,
@@ -348,14 +370,16 @@ class AdminController extends Controller
 
     public function confirmOrder($id_donhang)
     {
-        $order = TheOrder::find($id_donhang);
-        if ($order) {
-            $order->trangthai = 1;
-            $order->save();
-            return redirect()->route('orderlists')->with('success', 'Order confirmed successfully');
-        } else {
-            return response()->json(['error' => 'Order not found'], 404);
-        }
+        $order = TheOrder::findOrFail($id_donhang);
+ 
+     // Thay đổi trạng thái
+     $order->trangthai = $order->trangthai === 'Đã xác nhận' ? 'Chờ xác nhận' : 'Đã xác nhận';
+     $order->save();
+ 
+     return response()->json([
+         'success' => true,
+         'trangthai' => $order->trangthai,
+     ]);
     }
     // chi tiet don hang
     public function getOrderDetails($id_donhang)

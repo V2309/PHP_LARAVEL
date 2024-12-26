@@ -146,7 +146,7 @@ class ShoppingCartController extends Controller
         $order->email = $request->input('email'); // lấy email từ form
         $order->hinhthucthanhtoan = $request->input('hinhthucthanhtoan'); // lấy hình thức thanh toán từ form
         $order->ngaydat = Carbon::now('Asia/Ho_Chi_Minh'); // lấy ngày đặt hàng format giờ Việt Nam
-        $order->trangthai = 0; // trạng thái đơn hàng
+        $order->trangthai; // trạng thái đơn hàng
         $order->save(); // lưu đơn hàng vào database
         // duyệt qua từng sản phẩm trong giỏ hàng
         foreach($cart as $item){
@@ -161,4 +161,136 @@ class ShoppingCartController extends Controller
         Session::forget($this->strCart);
         return redirect()->route('home')->with('success', 'Đặt hàng thành công');
     }
+    
+
+    // tích hợp thanh toán bằng ZaloPay
+    public function payWithZaloPay(Request $request)
+    {
+        $config = [
+            "app_id" => 2554,
+            "key1" => "sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn",
+            "key2" => "trMrHtvjo6myautxDUiAcYsVtaeQ8nhf",
+            "endpoint" => "https://sb-openapi.zalopay.vn/v2/create",
+            'query_status_url' => 'https://sb-openapi.zalopay.vn/v2/query',
+            'refund_url' => 'https://sb-openapi.zalopay.vn/v2/refund',
+            'query_refund_url' => 'https://sb-openapi.zalopay.vn/v2/query_refund',
+        ];
+
+        $embeddata = '{}'; // Merchant's data
+        $items = '[]'; // Merchant's data
+        $transID = rand(0,1000000); //Random trans id
+        $order = [
+            "app_id" => $config["app_id"],
+            "app_time" => round(microtime(true) * 1000), // miliseconds
+            "app_trans_id" => date("ymd") . "_" . $transID, // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
+            "app_user" => "user123",
+            "item" => $items,
+            "embed_data" => $embeddata,
+            "amount" => 1000,
+            "description" => "Lazada - Payment for the order #$transID",
+            "bank_code" => "zalopayapp"
+        ];
+
+        $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" . $order["amount"]
+        . "|" . $order["app_time"] . "|" . $order["embed_data"] . "|" . $order["item"];
+        $order["mac"] = hash_hmac("sha256", $data, $config["key1"]);    
+
+        $context = stream_context_create([
+            "http" => [
+                "header" => "Content-type: application/x-www-form-urlencoded\r\n",
+                "method" => "POST",
+                "content" => http_build_query($order)
+            ]
+        ]);
+
+        $resp = file_get_contents($config["endpoint"], false, $context);
+        $result = json_decode($resp, true);
+
+        return response()->json($result);
+    }
+    // Xử lý callback từ ZaloPay
+    public function handleCallback(Request $request){
+        $config = config('zalopay');
+        $postdata = $request->getContent();
+        $postdatajson = json_decode($postdata, true);
+
+        $mac = hash_hmac("sha256", $postdatajson["data"], $config['key2']);
+        $requestmac = $postdatajson["mac"];
+
+        if (strcmp($mac, $requestmac) != 0) {
+            return response()->json([
+                "return_code" => -1,
+                "return_message" => "mac not equal"
+            ]);
+        }
+
+        $datajson = json_decode($postdatajson["data"], true);
+        // Cập nhật trạng thái đơn hàng dựa trên $datajson['app_trans_id']
+
+        return response()->json([
+            "return_code" => 1,
+            "return_message" => "success"
+        ]);
+    }
+    // Hàm gọi API truy vấn trạng thái đơn hàng
+    public function queryOrder(Request $request)
+    {
+        $config = config('zalopay');
+        $app_trans_id = $request->app_trans_id; // Truyền từ client
+
+        $data = $config['app_id'] . "|" . $app_trans_id . "|" . $config['key1'];
+        $params = [
+            "app_id" => $config['app_id'],
+            "app_trans_id" => $app_trans_id,
+            "mac" => hash_hmac("sha256", $data, $config['key1'])
+        ];
+
+        // $response = Http::post($config['query_status_url'], $params);
+        // return response()->json($response->json());
+    }
+    // Hàm gọi API hoàn tiền
+    public function refundOrder(Request $request)
+    {
+        $config = config('zalopay');
+        $timestamp = round(microtime(true) * 1000);
+
+        $params = [
+            "app_id" => $config['app_id'],
+            "m_refund_id" => date("ymd") . "_" . $config['app_id'] . "_" . $timestamp,
+            "timestamp" => $timestamp,
+            "zp_trans_id" => $request->zp_trans_id, // Truyền từ client
+            "amount" => $request->amount, // Số tiền cần hoàn lại
+            "description" => $request->description,
+            "mac" => ''
+        ];
+
+        $data = implode('|', [
+            $params['app_id'],
+            $params['zp_trans_id'],
+            $params['amount'],
+            $params['description'],
+            $params['timestamp']
+        ]);
+        $params['mac'] = hash_hmac("sha256", $data, $config['key1']);
+
+        // $response = Http::post($config['refund_url'], $params);
+        // return response()->json($response->json());
+    }
+    // Hàm gọi API truy vấn trạng thái hoàn tiền
+    public function queryRefund(Request $request)
+    {
+        $config = config('zalopay');
+        $timestamp = round(microtime(true) * 1000);
+
+        $data = $config['app_id'] . "|" . $request->m_refund_id . "|" . $timestamp;
+        $params = [
+            "app_id" => $config['app_id'],
+            "m_refund_id" => $request->m_refund_id,
+            "timestamp" => $timestamp,
+            "mac" => hash_hmac("sha256", $data, $config['key1'])
+        ];
+        // $response = Http::post($config['query_refund_url'], $params);
+        // return response()->json($response->json());
+    }
+    
 }

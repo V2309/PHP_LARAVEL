@@ -20,7 +20,6 @@ class CreateProductTable extends Migration
             $table->float('gia_cu');
             $table->string('id_loai_sanpham',20);
             $table->string('hinh_sanpham',50);
-            $table->string('hinh_quatang',50);
             $table->string('thongtin_km',100);
             $table->integer(('so_luong'));
             $table->string('id_nhomsp',20);

@@ -2,6 +2,13 @@
 @section('content')
 
 <section class="content-header">
+    <style>
+        .status-toggle:hover {
+           
+            cursor: pointer;
+        
+        }
+    </style>
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
@@ -77,16 +84,15 @@
                <td>{{$order->ngaydat}}</td>
              
                <td>
-                @if ($order->trangthai == 0)
-                <a href="#" class="btn btn-primary">Chờ xác nhận</a>
-              
-                @else
-               <a href="#" class="btn btn-success">Đã xác nhận</a>
-                @endif
+                <span style="font-size: 16px" class="badge status-toggle {{ $order->trangthai === 'Chờ xác nhận' ?  'badge-danger' :'badge-success'  }}" 
+                    data-id="{{ $order->id_donhang }}" 
+                    id="status-{{ $order->id_donhang }}">
+                    {{ $order->trangthai }}
+              </span>
                </td>
                <td>
-                <a class="btn btn-dark edit-product" href="{{route('confirmOrder',['id_donhang'=>$order->id_donhang])}}" >Xác nhận</a>
-              
+        
+          
                 <button class="btn btn-info view-order-detail" data-id="{{ $order->id_donhang }}">Detail</button>
                 </td>
            </tr>
@@ -119,6 +125,50 @@
         </div>
     </div>
 </section>
+
+{{-- xac nhan don hang --}}
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Bắt sự kiện click vào trạng thái
+            $('.status-toggle').on('click', function () {
+                const id_donhang = $(this).data('id');
+                const statusElement = $(this);
+    
+                $.ajax({
+                    url: "{{ route('confirmOrder', '') }}/" + id_donhang,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            // Cập nhật giao diện
+                            const newStatus = response.trangthai;
+                            if (newStatus === 'Đã xác nhận') {
+                                statusElement.text('Đã xác nhận')
+                                             .removeClass('bg-danger')
+                                             .addClass('bg-success');
+                            } else {
+                                statusElement.text('Chờ xác nhận')
+                                             .removeClass('bg-success')
+                                             .addClass('bg-danger');
+                            }
+                        } else {
+                            alert('Có lỗi xảy ra khi thay đổi trạng thái.');
+                        }
+                    },
+                    error: function () {
+                        alert('Không thể thay đổi trạng thái.');
+                    }
+                });
+            });
+        });
+    </script> 
+
+{{-- xem chi tiet don hang --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {

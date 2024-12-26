@@ -16,10 +16,11 @@ class Category extends Model
     protected $fillable = [
         'id_loaisp',
         'tenloaisp',
-        'trangthai',
         'anh_loaisp',
-        
+        'trangthai',
+     
     ];
+
 
     public function group()
     {
@@ -30,4 +31,6 @@ class Category extends Model
     {
         return $this->hasMany(Product::class, 'id_loaisp', 'id_loai_sanpham');
     }
+
+   
 }

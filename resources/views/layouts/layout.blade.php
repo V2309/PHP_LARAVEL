@@ -170,7 +170,7 @@
                                    
                                     @foreach( $categories as $cate)
                                     <li class="listcate-item">
-                                        @if($cate->trangthai == 1)
+                                        @if($cate->trangthai ==="Hiện")
                                         <a class="listcate-item__link">
                                         
                                             {{$cate->tenloaisp}}

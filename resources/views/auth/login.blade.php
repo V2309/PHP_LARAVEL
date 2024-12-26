@@ -25,10 +25,12 @@
                         <span class="fas fa-mobile-alt"></span>
                         <span>Số điện thoại</span>
                     </button>
-                    <button class="fb">
-                        <span class="fab fa-facebook" style=" line-height: 20px;width: 20px; height: 20px;left: 20px; position: absolute; top: 5px;font-size: 15px; text-align: center;"></span>
-                        <span>FACEBOOK</span>
-                    </button>
+                    <a href="{{route('facebook-auth')}}">
+                        <button class="fb">
+                            <span class="fab fa-facebook" style=" line-height: 20px;width: 20px; height: 20px;left: 20px; position: absolute; top: 5px;font-size: 15px; text-align: center;"></span>
+                            <span>FACEBOOK</span>
+                        </button>
+                    </a>
                    <a href="{{route('google-auth')}}">
                     <button  class="gg">
                         <span class="fab fa-google-plus " style=" line-height: 20px;width: 20px; height: 20px;left: 20px; position: absolute; top: 5px;font-size: 15px; text-align: center;"></span>
