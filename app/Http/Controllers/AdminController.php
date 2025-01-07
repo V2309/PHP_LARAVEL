@@ -7,7 +7,7 @@ use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TheOrder;
 use App\Models\OrderDetail;
-
+use App\Models\Blog;
 use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Http\Request;
@@ -391,6 +391,21 @@ class AdminController extends Controller
             return response()->json(['success' => false, 'error' => 'Order details not found']);
         }
         
+    }
+    // blog 
+    public function bloglists()
+    {
+        $blogs=Blog::paginate(3);
+        return view('admins.blogs.bloglists',compact('blogs'));
+    }
+    public function toggleBlogStatus($id_blog){
+        $blog = Blog::findOrFail($id_blog);
+        $blog->trangthai = $blog->trangthai === 'Hiện' ? 'Ẩn' : 'Hiện';
+        $blog->save();
+        return response()->json([
+            'success' => true,
+            'trangthai' => $blog->trangthai,
+        ]);
     }
 
    

@@ -114,7 +114,10 @@ Route::get('/orderlists', [AdminController::class, 'orderlists'])->name('orderli
 Route::post('/confirmOrder/{id_donhang}', [AdminController::class, 'confirmOrder'])->name('confirmOrder');
 Route::get('/get-order-details/{id}', [AdminController::class, 'getOrderDetails']);
 });
-
+// blog 
+// hiển thị danh sách blog
+Route::get('/bloglists', [AdminController::class, 'bloglists'])->name('bloglists');
+Route::get('/toggleBlogStatus', [AdminController::class, 'toggleBlogStatus'])->name('toggleBlogStatus');
 
 
 

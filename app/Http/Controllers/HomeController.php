@@ -24,11 +24,11 @@ class HomeController extends Controller
           $products = Product::with(['category', 'group'])
               ->where('ten_sanpham', 'LIKE', "%{$searching}%")
               ->paginate(3);
-      
+        $blogs=Blog::all();
           $categories = Category::all();
           $groups = Group::all();
       
-          return view('pages.home', compact('products', 'categories', 'groups'));
+          return view('pages.home', compact('products', 'categories', 'groups','blogs'));
       }
          
       public function about()
