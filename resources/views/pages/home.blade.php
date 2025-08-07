@@ -147,7 +147,7 @@
                               <div class="product-item__img" style="background-image: url({{asset('frontend/images/'.$product->hinh_sanpham)}});">
                                
                               </div>
-                              <h4 class="product-item__name">{{$product->ten_sanpham}}</h4>
+                              <h4 class="product-item__name">{{$product->ten_sanpham}} </h4>
                               <div class="product-item__price">
                                 <span class="product-item__price-old">{{ number_format($product->gia_cu, 0, ',', '.') }}₫</span>
                                 <span class="product-item__price-new">{{ number_format($product->gia_moi, 0, ',', '.') }}₫</span>
@@ -156,15 +156,23 @@
                               
                                 <div class="product-item__origin">
                                 
-                                   
+                                
 
-                                    <span class="product-item__brand"> </span>
+                                    <span class="product-item__brand"> 
+                                        @if ($product->so_luong > 0) 
+                                        Còn hàng
+                                    @else 
+                                        Hết hàng
+                                    @endif
+                                    </span>
                                 
                                 
-                                    <span class="product-item-origin-name"></span>
+                                    <span class="product-item-origin-name">
+                                        {{$product->so_luong}}
+                                    </span>
                                   </div>
                               
-                              <a href="{{ route('orderNow', ['id_sanpham' => $product->id_sanpham]) }}" class="buyproduct">
+                              <a href="{{ route('cart.add', ['id_sanpham' => $product->id_sanpham]) }}" class="buyproduct">
                                 CHỌN MUA 
                               </a>
                             </a>
@@ -174,7 +182,9 @@
                       
                     </div>
                 
-                    {{ $products->links('pagination::bootstrap-4') }}
+                    <div class="pagination-container" style="display: flex; justify-content: center;">
+                        {{ $products->links('pagination::bootstrap-4') }}
+                    </div>
                  
                 </div>
 
@@ -315,32 +325,51 @@
 </div>
 <!--Modal-->
  <!-- modal -->  
- <a  class="helpcenter" onclick="openhelp()" id="helpcenter">
+<!-- Nút Hỗ trợ -->
+<a class="helpcenter" onclick="openhelp()" id="helpcenter">
     <i class="fas fa-envelope" style="font-size: 20px;color: #fff;"></i>
     <span class="texthelp">Hỗ trợ</span>
-   </a>
-   <div class="modal-help" id="modalhelp">
-     
-    <form action="" class="modal-contents ">
-      <div class="content-form">
-        <h3 class="modal-heading__form spt">GOFOOD XIN HÂN HẠNH ĐƯỢC HỖ TRỢ QUÝ KHÁCH</h3>
-        <textarea name="" id="" cols="30" rows="3" placeholder="Nội dung (Xin quý khác mô tả chi tiết)" ></textarea>
-       <div class="gt">
-        <input type="radio" name="gt" id="gt" style="margin-right: 3px; border: 1px solid #008848;">Anh 
-        <input type="radio" name="gt" id="gt" style="margin-left: 20px; margin-right: 3px;border: 1px solid #008848;">Chị 
-       </div>
-       <div class="input-help">
-        <input type="text" name="" id="" placeholder="Họ và Tên của quý khách" >
-        <input type="text" name="" id=""placeholder="Nhập số điện thoại (Khi cần GoFood gọi lại)" >
-        <input type="email" name="" id="" placeholder="Email của quý Khách" >
-       </div>
-        <button class="btns btn--primary" type="submit">Gửi Góp Ý</button>
-        <button class="btns" type="button" style="background: #fff;color: #000;border: 1px solid #008848;" onclick="closehelp()" >ĐÓNG</button>
+</a>
 
-      </div>
-      <div class="close-help" onclick="closehelp()">x</div>
+<!-- Modal Hỗ trợ -->
+<div class="modal-help" id="modalhelp">
+    <form action="{{ route('support.send') }}" method="POST" class="modal-contents">
+        @csrf
+        <div class="content-form">
+            <h3 class="modal-heading__form spt">GOFOOD XIN HÂN HẠNH ĐƯỢC HỖ TRỢ QUÝ KHÁCH</h3>
+            <textarea name="content" id="support-content" cols="30" rows="3" placeholder="Nội dung (Xin quý khách mô tả chi tiết)" required></textarea>
+            @error('content')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+
+            <div class="gt">
+                <input type="radio" name="gender" value="Anh" id="gender-male" style="margin-right: 3px; border: 1px solid #008848;" required> Anh 
+                <input type="radio" name="gender" value="Chị" id="gender-female" style="margin-left: 20px; margin-right: 3px; border: 1px solid #008848;"> Chị 
+                @error('gender')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="input-help">
+                <input type="text" name="name" id="support-name" placeholder="Họ và Tên của quý khách" required>
+                @error('name')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+                <input type="text" name="phone" id="support-phone" placeholder="Nhập số điện thoại (Khi cần GoFood gọi lại)" required>
+                @error('phone')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+                <input type="email" name="email" id="support-email" placeholder="Email của quý Khách" required>
+                @error('email')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <button class="btns btn--primary" type="submit">Gửi Góp Ý</button>
+            <button class="btns" type="button" style="background: #fff;color: #000;border: 1px solid #008848;" onclick="closehelp()">ĐÓNG</button>
+        </div>
+        <div class="close-help" onclick="closehelp()">x</div>
     </form>
-  
 </div>
 
 
@@ -350,5 +379,259 @@
     <span>Về trang đầu</span>
 </a>
  
+<!-- Nút chat cố định -->
+<div class="chat-button" onclick="toggleChat()">
+    <i class="fas fa-comments" style="font-size: 24px; color: #fff;"></i>
+    <span>Chat</span>
+</div>
+
+<!-- Menu chat bên phải -->
+<div class="chat-menu" id="chatMenu">
+    <div class="chat-header">
+        <h4>Chat Real-Time</h4>
+        <button class="close-chat" onclick="toggleChat()">×</button>
+    </div>
+    <div class="chat-content">
+        <div class="user-list">
+            <h5>Danh sách người dùng</h5>
+            <ul class="list-group">
+                @auth
+                    @php $users = App\Models\User::where('id', '!=', Auth::id())->get(); @endphp
+                    @foreach($users as $user)
+                        <li class="list-group-item user-item" onclick="selectUser({{ $user->id }}, '{{ $user->name }}')">
+                            {{ $user->name }} {{ $user->id == 1 ? '(Admin)' : '' }}
+                        </li>
+                    @endforeach
+                @endauth
+            </ul>
+        </div>
+        <div class="chat-area">
+            <div id="chat-box" class="chat-box"></div>
+            <form id="chat-form" method="POST" action="{{ route('chat.send') }}">
+                @csrf
+                <input type="hidden" name="receiver_id" id="receiver_id">
+                <textarea name="content" id="content" class="form-control chat-input" placeholder="Nhập tin nhắn..." required></textarea>
+                <button type="submit" class="btn btn-primary send-btn">Gửi</button>
+            </form>
+            <p class="chat-status">Đang chat với: <span id="receiver_name">Chọn người để chat</span></p>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- CSS cho nút chat và menu -->
+<style>
+.chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: background 0.3s ease;
+}
+.chat-button:hover {
+    background: #0056b3;
+}
+
+.chat-menu {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Ẩn mặc định */
+    width: 400px;
+    height: 100%;
+    background: #f9f9f9;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+.chat-menu.active {
+    right: 0; /* Hiện khi click */
+}
+
+.chat-header {
+    background: #007bff;
+    color: #fff;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h4 {
+    margin: 0;
+    font-size: 18px;
+}
+.close-chat {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.chat-content {
+    padding: 15px;
+    height: calc(100% - 50px);
+    display: flex;
+    flex-direction: column;
+}
+
+.user-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+.user-list h5 {
+    color: #555;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+.list-group-item.user-item {
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: none;
+    margin-bottom: 5px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.list-group-item.user-item:hover {
+    background: #e0f7fa;
+}
+
+.chat-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.chat-box {
+    flex-grow: 1;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.chat-box p {
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 5px;
+    background: #f1f1f1;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+.chat-box p.your-message {
+    background: #007bff;
+    color: #fff;
+    margin-left: auto;
+    text-align: right;
+}
+
+.chat-input {
+    resize: none;
+    height: 50px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+.send-btn {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    background: #007bff;
+}
+.chat-status {
+    font-style: italic;
+    color: #666;
+}
+</style>
+
+<!-- JavaScript cho chat -->
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+<script>
+function toggleChat() {
+    var chatMenu = document.getElementById('chatMenu');
+    chatMenu.classList.toggle('active');
+}
+
+// Kết nối Pusher
+Pusher.logToConsole = true;
+var pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
+    cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
+    encrypted: true
+});
+@auth
+var channel = pusher.subscribe('private-chat.' + {{ Auth::id() }});
+
+channel.bind('App\\Events\\MessageSent', function(data) {
+    var chatBox = document.getElementById('chat-box');
+    var currentReceiverId = document.getElementById('receiver_id').value;
+    if (data.message.sender_id != {{ Auth::id() }} && data.message.sender_id == currentReceiverId) {
+        var senderName = document.getElementById('receiver_name').innerText;
+        chatBox.innerHTML += '<p><strong>' + senderName + ':</strong> ' + data.message.content + '</p>';
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+});
+@endauth
+
+function selectUser(userId, userName) {
+    document.getElementById('receiver_id').value = userId;
+    document.getElementById('receiver_name').innerText = userName;
+
+    fetch('/chat/messages?receiver_id=' + userId)
+        .then(response => response.json())
+        .then(messages => {
+            var chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            messages.forEach(msg => {
+                var senderName = msg.sender_id == {{ Auth::id() }} ? 'Bạn' : userName;
+                var messageClass = msg.sender_id == {{ Auth::id() }} ? 'your-message' : '';
+                chatBox.innerHTML += '<p class="' + messageClass + '"><strong>' + senderName + ':</strong> ' + msg.content + '</p>';
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+}
+
+document.getElementById('chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var formData = new FormData(form);
+    var content = document.getElementById('content').value;
+
+    var chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML += '<p class="your-message"><strong>Bạn:</strong> ' + content + '</p>';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            form.reset();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        chatBox.lastElementChild.remove();
+    });
+});
+</script>
 
 @endsection

@@ -81,8 +81,12 @@
                        
 
                         <td>
-                            <button class="btn btn-danger edit-group" data-id="{{ $group->id_nhomsp }}">Edit</button>
-                            <a class="btn btn-success" href="{{route('deleteGroup',['id_nhomsp'=>$group->id_nhomsp])}}">Delete</a>
+                            <button class="btn btn-primary edit-group" data-id="{{ $group->id_nhomsp }}">
+                                <i class="fas fa-edit text-white"></i>
+                            </button>
+                            <a class="btn btn-danger" href="{{route('deleteGroup',['id_nhomsp'=>$group->id_nhomsp])}}">
+                                <i class="fas fa-trash"></i>
+                            </a>
                           
                         </td>
                     </tr>

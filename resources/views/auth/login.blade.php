@@ -21,10 +21,12 @@
                 <div class="form-box form-register">
                     <h1 style="text-align: center">ĐĂNG NHẬP</h1>
                   <div class="auth-social">
+                   <a href="{{route('phone.login')}}">
                     <button class="sdt">
                         <span class="fas fa-mobile-alt"></span>
                         <span>Số điện thoại</span>
                     </button>
+                   </a>
                     <a href="{{route('facebook-auth')}}">
                         <button class="fb">
                             <span class="fab fa-facebook" style=" line-height: 20px;width: 20px; height: 20px;left: 20px; position: absolute; top: 5px;font-size: 15px; text-align: center;"></span>

@@ -15,14 +15,23 @@ class RoleMiddleware
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next,$role)
+    public function handle(Request $request, Closure $next)
     {
-        $user = Auth::user();
-        $roles = $user->roles->pluck('role.rolename')->toArray();
-
-        if (!in_array($role, $roles)) {
-            return abort(403, 'Access denied');
+        if (!Auth::check()) {
+            return redirect()->route('login'); // Nếu chưa đăng nhập, chuyển về login
         }
-        return $next($request);
+
+        $user = Auth::user();
+        $roleNames = $user->roles->map(function ($roleMapping) {
+            return $roleMapping->role->rolename;
+        })->toArray();
+
+        if (!in_array('Admin', $roleNames)) {
+            // Đăng xuất người dùng và chuyển về login nếu không phải Admin
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Bạn không có quyền truy cập trang này, vui lòng đăng nhập bằng tài khoản Admin.');
+        }
+
+        return $next($request); // Nếu là Admin, cho phép tiếp tục
     }
 }

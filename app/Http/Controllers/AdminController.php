@@ -5,10 +5,12 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Group;
 use Illuminate\Support\Facades\Auth;
+
 use App\Models\TheOrder;
 use App\Models\OrderDetail;
 use App\Models\Blog;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 
@@ -18,23 +20,48 @@ class AdminController extends Controller
     {
 
     $this->middleware('auth');
-           // Phân quyền cho các phương thức
-    // $this->middleware()->only([
-    //     'createproduct', 'addproduct', 'updateProduct', 'deleteProduct',
-    //     'createCategory', 'addCategory', 'updateCategory', 'deleteCategory',
-    //     'creategroup', 'addGroup',
-    // ]);
-
-    // $this->middleware('checkRole:Admin,User,Customer')->only([
-    //     'dashboard', 'productlists', 'productDetail', 'categorylists', 'grouplists'
-    // ]);
+  
 
     }
+    // trang chu admin
     public function dashboard()
     {
-        return view('admins.dashboard');
+        $orderCount = TheOrder::count();
+        $productCount = Product::count();
+        $blogCount = Blog::count();
+        $groupCount = Group::count();
+        $categoryCount = Category::count();
+        // Lấy dữ liệu đơn hàng trong 7 ngày qua
+        $orderData = TheOrder::selectRaw('DATE(ngaydat) as date, COUNT(*) as count')
+            ->where('ngaydat', '>=', now()->subDays(7))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $labels = $orderData->pluck('date')->map(function ($date) {
+            return \Carbon\Carbon::parse($date)->format('d/m');
+        })->toArray();
+        $data = $orderData->pluck('count')->toArray();
+
+        // Lấy 10 sản phẩm bán chạy nhất
+        $products = Product::leftJoin('orderdetail', 'product.id_sanpham', '=', 'orderdetail.id_sanpham')
+            ->select('product.*', DB::raw('SUM(orderdetail.soluong) as total_sold')) // Sử dụng DB::raw()
+            ->groupBy('product.id_sanpham', 'product.ten_sanpham', 'product.gia_moi', 'product.hinh_sanpham', 'product.id_loai_sanpham', 'product.gia_cu', 'product.thongtin_km', 'product.so_luong', 'product.id_nhomsp', 'product.created_at', 'product.updated_at')
+            ->orderBy('total_sold', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admins.dashboard', compact(
+            'orderCount', 
+            'productCount', 
+            'blogCount', 
+            'groupCount', 
+            'categoryCount', 
+            'labels', 
+            'data', 
+            'products'
+        ));
     }
-    
 
     // xu ly cac chuc nang cua product
      public function productlists()
@@ -54,6 +81,8 @@ class AdminController extends Controller
         // Trả về view chi tiết sản phẩm
         return view('admins.products.productdetail', compact('product'));
     }
+
+    // hien thi view create product
    
         public function createproduct()
     {
@@ -74,7 +103,7 @@ class AdminController extends Controller
 
     return view('admins.products.productlists', compact('products', 'categories', 'groups'));
 }
-   
+   // thêm mới sản phẩm
     public function addproduct(Request $request){
         $request -> validate([
             'ten_sanpham'=>'required',
@@ -130,7 +159,6 @@ class AdminController extends Controller
         }
     }
      // cap nhat product
-
      public function updateProduct(Request $request , $id_sanpham){
 
         $product = Product::find($id_sanpham);
@@ -363,7 +391,7 @@ class AdminController extends Controller
     // hien thi don hang
     public function orderlists()
 
-    {   $orders = TheOrder::with('orderDetail')->paginate(3);
+    {   $orders = TheOrder::with('orderDetails')->paginate(3);
         return view('admins.order.orderlists',compact('orders'));   
     }
     // xac nhan don hang
@@ -392,6 +420,20 @@ class AdminController extends Controller
         }
         
     }
+    // xoa don hang
+    public function deleteOrder($id_donhang)
+    {
+        $order = TheOrder::find($id_donhang);
+        if ($order) {
+            // Xóa các chi tiết đơn hàng liên quan trước
+            OrderDetail::where('id_donhang', $id_donhang)->delete();
+            // Xóa đơn hàng
+            $order->delete();
+            return response()->json(['success' => 'Đơn hàng đã được xóa thành công']);
+        } else {
+            return response()->json(['error' => 'Không tìm thấy đơn hàng'], 404);
+        }
+    }
     // blog 
     public function bloglists()
     {
@@ -400,12 +442,115 @@ class AdminController extends Controller
     }
     public function toggleBlogStatus($id_blog){
         $blog = Blog::findOrFail($id_blog);
-        $blog->trangthai = $blog->trangthai === 'Hiện' ? 'Ẩn' : 'Hiện';
+        $blog->status = $blog->status === 'Hiện' ? 'Ẩn' : 'Hiện';
         $blog->save();
         return response()->json([
             'success' => true,
-            'trangthai' => $blog->trangthai,
+            'status' => $blog->status,
         ]);
+    }
+    public function getBlogDetails($id)
+    {
+        try {
+            $blog = Blog::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'blog' => $blog
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không tìm thấy bài viết hoặc có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    // hien thi form them moi blog
+    public function createBlog()
+    {
+        return view('admins.blogs.createblog');
+    }
+    // them moi blog
+    public function addBlog(Request $request)
+    {
+        $request->validate([
+            'nameBlog' => 'required',
+            'shortContent' => 'required',
+            'image' => 'required|image', // Giới hạn file ảnh
+            'mainContent' => 'required',
+           
+        ]);
+
+        $filename = null;
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName(); // Thêm timestamp để tránh trùng tên
+            $file->move(public_path('backend/images'), $filename);
+            // Copy sang thư mục frontend
+            copy(public_path('backend/images/' . $filename), public_path('frontend/images/' . $filename));
+        }
+
+        Blog::create([
+            'nameBlog' => $request->nameBlog,
+            'shortContent' => $request->shortContent,
+            'image' => $filename,
+            'mainContent' => $request->mainContent,
+        ]);
+
+        return redirect()->route('bloglists')->with('success', 'Blog created successfully');
+    }
+    // xóa blog hiện thị alert xác nhân rồi mới xóa
+    public function deleteBlog($id)
+    {
+        $blog = Blog::find($id);
+        if ($blog) {
+            $blog->delete();
+            return response()->json(['success' => 'Blog deleted successfully']);
+        } else {
+            return response()->json(['error' => 'Blog not found'], 404);
+        }
+    }
+    // Hàm hiển thị form chỉnh sửa (nếu cần)
+    public function showEditForm($id)
+    {
+        $blog = Blog::findOrFail($id);
+        return view('admins.blogs.editblog', compact('blog'));
+    }
+
+    // Hàm cập nhật blog
+    public function updateBlog(Request $request, $id)
+    {
+        $request->validate([
+            'nameBlog' => 'required',
+            'shortContent' => 'required',
+            'image' => 'nullable|image', // Ảnh không bắt buộc
+            'mainContent' => 'required',
+        ]);
+
+        $blog = Blog::findOrFail($id);
+
+        $filename = $blog->image; // Giữ ảnh cũ nếu không upload ảnh mới
+        if ($request->hasFile('image')) {
+            // Xóa ảnh cũ nếu tồn tại
+            if ($filename && file_exists(public_path('backend/images/' . $filename))) {
+                unlink(public_path('backend/images/' . $filename));
+                unlink(public_path('frontend/images/' . $filename));
+            }
+            // Upload ảnh mới
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('backend/images'), $filename);
+            copy(public_path('backend/images/' . $filename), public_path('frontend/images/' . $filename));
+        }
+
+        $blog->update([
+            'nameBlog' => $request->nameBlog,
+            'shortContent' => $request->shortContent,
+            'image' => $filename,
+            'mainContent' => $request->mainContent,
+            'status' => $blog->status, // Giữ nguyên status (mặc định 'active' khi tạo)
+        ]);
+
+        return redirect()->route('bloglists')->with('success', 'Blog updated successfully');
     }
 
    

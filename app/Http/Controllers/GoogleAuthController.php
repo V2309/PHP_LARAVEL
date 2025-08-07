@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
-
+use Illuminate\Support\Str;
 
 class GoogleAuthController extends Controller
 {
@@ -26,12 +26,14 @@ class GoogleAuthController extends Controller
                     'email' => $google_user->getEmail(),
                     'google_id' => $google_user->getId(),
                     'password' => bcrypt(uniqid()), // Mật khẩu ngẫu nhiên
-                    
+                    'auth_token' => Str::random(60), // Dùng auth_token
                 ]);
             Auth::login($new_User);
             return redirect('/home');
         }
         else{
+            $user->auth_token = Str::random(60); // Dùng auth_token
+            $user->save();
             Auth::login($user);
             return redirect('/home');
         }

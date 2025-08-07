@@ -11,6 +11,7 @@ class Product extends Model
     
     protected $table = 'product';
     protected $primaryKey = 'id_sanpham';
+    public $timestamps = true;
     protected $fillable = [
         'ten_sanpham',
         'gia_moi',
@@ -34,6 +35,9 @@ class Product extends Model
     {
         return $this->hasMany(OrderDetail::class, 'id_sanpham', 'id_sanpham');
     }
-
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class, 'product_id', 'id_sanpham');
+    }
 
 }

@@ -32,7 +32,7 @@
                                 </span>
                             </div>
                         </a>
-                        <a href="{{route('orderNow', ['id_sanpham' => $item->id_sanpham])}}" class="buyproduct">
+                        <a href="{{ route('cart.add', ['id_sanpham' => $item->id_sanpham]) }}" class="buyproduct">
                             CHỌN MUA
                         </a>
                     </div>

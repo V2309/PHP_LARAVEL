@@ -11,17 +11,23 @@ class TheOrder extends Model
     protected $table = 'TheOrder';
     protected $primaryKey = 'id_donhang';
     protected $fillable = [
-     'tendonhang',
-     'tenkhachhang',
-    'diachi',
-    'sdt',
-    'email',
-    'hinhthucthanhtoan',
-    'ngaydat',
-    'trangthai',
-
+        'tendonhang', 'hinhthucthanhtoan', 'tenkhachhang', 'diachi', 'sdt',
+        'email', 'ngaydat', 'trangthai', 'user_id', 'session_id'
     ];
-    public function orderDetail()
+
+    public $timestamps = true;
+
+    protected $casts = [
+        'trangthai' => 'string', // Enum: 'Chờ xác nhận', 'Đã xác nhận'
+        'ngaydat' => 'date',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class, 'id_donhang', 'id_donhang');
     }

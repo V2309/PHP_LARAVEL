@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\Group;
 class ProductController extends Controller
 {
-    //
+    // danh sach san pham kèm theo nhóm sản phẩm
     public function productcategory($id_nhomsp)
     {
         // Lấy sản phẩm dựa trên id_nhomsp
@@ -22,6 +22,7 @@ class ProductController extends Controller
     
         return view('pages.productcategory', compact('categories', 'products','groups'));
     }
+    // chi tiết sản phẩm
     public function productDetail($id_sanpham){
         $product = Product::with(['category', 'group'])->findOrFail($id_sanpham);
 

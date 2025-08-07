@@ -10,5 +10,5 @@ class Blog extends Model
     use HasFactory;
     protected $table = 'Blog';
     protected $primaryKey = 'id';
-    protected $fillable = ['nameBlog', 'shortContent', 'image', 'mainContent'];
+    protected $fillable = ['nameBlog', 'shortContent', 'image', 'mainContent' ,'status'];
 }

@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'google_id',
         'facebook_id',
+        'phone_number',
     ];
 
     /**
@@ -48,6 +49,23 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserRolesMapping::class, 'userid', 'id');
     }
+    public function carts()
+    {
+        return $this->hasMany(Cart::class, 'user_id');
+    }
 
+    public function orders()
+    {
+        return $this->hasMany(TheOrder::class, 'user_id');
+    }
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
 
 }

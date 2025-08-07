@@ -109,8 +109,12 @@
 
                         <td>
                           
-                            <button class="btn btn-danger edit-category" data-id="{{ $category->id_loaisp }}">Edit</button>
-                            <button class="btn btn-success delete-category" data-id="{{ $category->id_loaisp }}">Delete</button>
+                            <button class="btn btn-primary edit-category" data-id="{{ $category->id_loaisp }}">
+                                <i class="fas fa-edit text-white"></i>
+                            </button>
+                            <button class="btn btn-danger delete-category" data-id="{{ $category->id_loaisp }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
                             {{-- <a class="btn btn-info" href="">Detail</a> --}}
                         </td>
                     </tr>

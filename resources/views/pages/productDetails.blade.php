@@ -77,7 +77,7 @@
                 <label>-10%</label>
             </div>
             <div class="buy">
-                <a href="{{route('orderNow',['id_sanpham'=>$product->id_sanpham])}}" class="chooseproduct">
+                <a href="{{ route('cart.add', ['id_sanpham' => $product->id_sanpham]) }}" class="chooseproduct">
                     CHỌN MUA
                 </a>
                 <span class="promotion"><i>(Khuyến mãi chỉ áp dụng mua Online)</i></span>

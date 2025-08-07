@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\RoleMaster;
 use App\Models\UserRolesMapping;
-
+use Illuminate\Support\Str;
 class LoginController extends Controller
 {
     /*
@@ -26,18 +26,25 @@ class LoginController extends Controller
 
     use AuthenticatesUsers;
 
-    protected function authenticated($request, $user)
+    protected function authenticated(Request $request, $user)
     {
-        // Lấy danh sách vai trò của người dùng
+        // Sinh token ngẫu nhiên
+        $token = Str::random(60);
+        
+        // Cập nhật token vào cột auth_token
+        $user->auth_token = $token;
+        $user->save();
+    
+        // Lấy danh sách vai trò
         $roleNames = $user->roles->map(function($roleMapping) {
-            return $roleMapping->role->rolename; // Truy xuất tên role từ bảng RoleMaster
+            return $roleMapping->role->rolename;
         })->toArray();
-
+        // Kiểm tra vai trò và chuyển hướng tương ứng nếu là Admin
         if (in_array('Admin', $roleNames)) {
-            return redirect()->route('dashboard'); // Chuyển hướng trang quản trị
+            return redirect()->route('dashboard');
         }
-     
-        return redirect()->route('home'); // Chuyển hướng trang chủ
+        // Nếu không phải Admin, chuyển hướng về trang chủ
+        return redirect()->route('home');
     }
         
     /**

@@ -10,7 +10,7 @@ use App\Models\Blog;
 
 class HomeController extends Controller
 {
-    
+    // Trang chủ
       public function index()
       {
             $blogs = Blog::latest()->take(3)->get(); // Lấy 5 blog mới nhất
@@ -31,13 +31,16 @@ class HomeController extends Controller
           return view('pages.home', compact('products', 'categories', 'groups','blogs'));
       }
          
+      // trang giới thiệu
       public function about()
       {
           return view('pages.about');
       }
+      // Trang liên hệ
       public function support()
       {
           return view('pages.support');
       }
-   
+      
+    
 }

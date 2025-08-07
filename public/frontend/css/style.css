@@ -1298,7 +1298,7 @@ a.iconphone {
 .modal-help {
     display: none;
     position: fixed;
-    z-index: 2;
+    z-index: 9999;
     left: 0;
     top: 0;
     width: 100%;
@@ -1416,6 +1416,7 @@ a.iconphone {
     color: var(--white-color);
     text-align: center;
     right: 1%;
+    bottom: 15%;
     background: rgba(70,70,70,.8392156862745098);
 }
 
@@ -2749,5 +2750,26 @@ form label {
     .alert-css span {
         font-size: 16px;
         z-index: 99;
+        color: #000;
         font-weight: bold;
     }
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+    .pagination-container nav ul li {
+        min-width: 10px;
+        min-height: 10px;
+        margin: 0 5px;
+    }
+ .alert span {
+    font-size: 16px;
+    color: #0e0101;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: 0.3s;
+ }

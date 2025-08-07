@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
+
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Http\Request;
 class RegisterController extends Controller
 {
     /*
@@ -29,13 +29,13 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
-
+    protected $redirectTo = '/login'; // Hoặc dùng route('login')
     /**
      * Create a new controller instance.
      *
      * @return void
      */
+  
     public function __construct()
     {
         $this->middleware('guest');
@@ -49,9 +49,16 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
+        // Validate dữ liệu đầu vào
+        // Sử dụng Validator để kiểm tra dữ liệu
+        // Nếu không hợp lệ, sẽ trả về lỗi
+        // Nếu hợp lệ, sẽ tiếp tục thực hiện phương thức create
+        
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
+            // thông báo lỗi nếu không hợp lệ
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            // mật khẩu phải có ít nhất 8 ký tự, xác nhận mật khẩu
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
     }
@@ -69,5 +76,17 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+       
     }
+    // Ghi đè phương thức register
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        $user = $this->create($request->all());
+
+        // Không đăng nhập tự động, chỉ chuyển hướng về /login
+        return redirect($this->redirectTo);
+    }
+    
 }

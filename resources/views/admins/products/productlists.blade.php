@@ -82,9 +82,19 @@
                         </td>
 
                         <td>
-                            <button class="btn btn-danger edit-product" data-id="{{ $product->id_sanpham }}">Edit</button>
-                            <button class="btn btn-success delete-product" data-id="{{$product->id_sanpham}}">Delete</button>
-                           <a class="btn btn-info" href="{{ route('productDetail', ['id_sanpham' => $product->id_sanpham]) }}">Detail</a> 
+                           
+                        
+                            <a class="btn btn-default" href="{{ route('productDetail', ['id_sanpham' => $product->id_sanpham]) }}">
+                                <i class="fas fa-eye"></i>
+                            </a> 
+                            <button class="btn btn-primary edit-product" data-id="{{ $product->id_sanpham }}">
+                                <i class="fas fa-edit text-white    "></i>
+                            </button>
+                          
+                            <button class="btn btn-danger delete-product" data-id="{{$product->id_sanpham}}">
+                                <i class="fas fa-trash text-white"></i>
+                            </button>
+                        
                         </td>
                     </tr>
                 @endforeach
@@ -167,7 +177,68 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
    <script>
-      $(document).ready(function() {
+    
+     //  Edit product
+     $('.edit-product').click(function() {
+        var id_sanpham = $(this).data('id');
+        var token = "{{ csrf_token() }}"; // Token CSRF
+
+        $.ajax({
+            url: '/get-product/' + id_sanpham,
+            type: 'GET',
+            data: {
+                "_token": token // Gửi token (không bắt buộc cho GET, nhưng giữ để đồng bộ)
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#id_sanpham').val(response.product.id_sanpham);
+                    $('#ten_sanpham').val(response.product.ten_sanpham);
+                    $('#gia_moi').val(response.product.gia_moi);
+                    $('#gia_cu').val(response.product.gia_cu);
+                    $('#id_loai_sanpham').val(response.product.id_loai_sanpham);
+                    $('#thongtin_km').val(response.product.thongtin_km);
+                    $('#so_luong').val(response.product.so_luong);
+                    $('#id_nhomsp').val(response.product.id_nhomsp);
+                    $('#editProductModal').modal('show');
+                } else {
+                    alert(response.error);
+                }
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.responseText);
+            }
+        });
+    });
+
+    // Update product
+    $('#editProductForm').submit(function(e) {
+        e.preventDefault();
+        var id_sanpham = $('#id_sanpham').val();
+        var formData = new FormData(this);
+        formData.append('_token', '{{ csrf_token() }}'); // Thêm CSRF token vào FormData
+
+        $.ajax({
+            url: '/update-product/' + id_sanpham,
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if (response.success) {
+                    alert(response.success);
+                    location.reload();
+                } else {
+                    alert(response.error);
+                }
+            },
+            error: function(xhr) {
+                console.log(xhr.responseText); // Log lỗi chi tiết
+                alert('Error: ' + xhr.status + ' - ' + xhr.responseText);
+            }
+        });
+    });
+    // # Delete product
+         $(document).ready(function() {
         $('.delete-product').click(function() {
             var id_sanpham = $(this).data('id');
             var token = "{{ csrf_token() }}";
@@ -190,55 +261,6 @@
             }
         });
     });
-     //  Edit product
-     $('.edit-product').click(function() {
-            var id_sanpham = $(this).data('id');
-            $.ajax({
-                url: '/get-product/' + id_sanpham,
-                type: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        $('#id_sanpham').val(response.product.id_sanpham);
-                        $('#ten_sanpham').val(response.product.ten_sanpham);
-                        $('#gia_moi').val(response.product.gia_moi);
-                        $('#gia_cu').val(response.product.gia_cu);
-                        $('#id_loai_sanpham').val(response.product.id_loai_sanpham);
-                     //   $('#hinh_sanpham').val(response.product.hinh_sanpham);
-                        $('#thongtin_km').val(response.product.thongtin_km);
-                        $('#so_luong').val(response.product.so_luong);
-                        $('#id_nhomsp').val(response.product.id_nhomsp);
-                        $('#editProductModal').modal('show');
-                    } else {
-                        alert(response.error);
-                    }
-                }
-            });
-        });
-   
-
-         // Update category
-        $('#editProductForm').submit(function(e) {
-             e.preventDefault();
-             var id_sanpham = $('#id_sanpham').val();
-             var formData = new FormData(this);
-
-            $.ajax({
-                 url: '/update-product/' + id_sanpham,
-                 type: 'POST',
-                 data: formData,
-                 contentType: false,
-                 processData: false,
-                 success: function(response) {
-                     if (response.success) {
-                         alert(response.success);
-                         location.reload();
-                     } else {
-                         alert(response.error);
-                     }
-                 }
-             });
-         });
-    
     
     </script>
 </section>

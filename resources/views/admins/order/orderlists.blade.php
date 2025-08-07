@@ -93,8 +93,13 @@
                <td>
         
           
-                <button class="btn btn-info view-order-detail" data-id="{{ $order->id_donhang }}">Detail</button>
-                </td>
+                <button class="btn btn-default view-order-detail" data-id="{{ $order->id_donhang }}">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <a href="javascript:void(0)" class="btn btn-danger delete-order" data-id="{{ $order->id_donhang }}" title="Xóa đơn hàng">
+                    <i class="fas fa-trash text-white"></i>
+                </a>
+            </td>
            </tr>
                 @endforeach
 
@@ -166,6 +171,33 @@
                 });
             });
         });
+        // xoa don hang co xac nhan 
+        $(document).ready(function() {
+        $('.delete-order').on('click', function() {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này không?')) {
+                var orderId = $(this).data('id');
+                $.ajax({
+                    url: '{{ route("deleteOrder", "") }}/' + orderId,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        _method: 'DELETE'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Xóa đơn hàng thành công!');
+                            location.reload(); // Tải lại trang để cập nhật danh sách
+                        } else {
+                            alert(response.error || 'Có lỗi khi xóa đơn hàng.');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Không thể xóa đơn hàng: ' + xhr.statusText);
+                    }
+                });
+            }
+        });
+    });
     </script> 
 
 {{-- xem chi tiet don hang --}}

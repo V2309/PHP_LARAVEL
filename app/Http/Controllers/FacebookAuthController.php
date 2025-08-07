@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Str;
 class FacebookAuthController extends Controller
 {
     //
@@ -25,11 +25,14 @@ class FacebookAuthController extends Controller
                         'email' => $facebook_user->getEmail(),
                         'facebook_id' => $facebook_user->getId(),
                         'password' => bcrypt(uniqid()), // Mật khẩu ngẫu nhiên
+                        'auth_token' => Str::random(60), // Dùng auth_token
                     ]);
                 Auth::login($new_User);
                 return redirect('/home');
             }
             else{
+                $user->auth_token = Str::random(60); // Dùng auth_token
+                $user->save();
                 Auth::login($user);
                 return redirect('/home');
             }

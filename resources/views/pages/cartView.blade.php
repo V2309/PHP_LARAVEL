@@ -2,45 +2,43 @@
 @section('title', 'Giỏ hàng của bạn')
 
 @section('content')
- 
 <div class="app__container">
-@if (session('success'))
-    <div class="alert alert-notify alert-success alert-dismissible fade show" role="alert" id="success-alert">
-        <span>  {{ session('success') }}</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  
-    @else
-    <div class="alert alert-notify alert-danger alert-dismissible fade show" role="alert" id="success-alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
+    @if (session('success'))
+        <div class="alert alert-notify alert-success alert-dismissible fade show" role="alert" id="success-alert">
+            <span>{{ session('success') }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @elseif (session('error'))
+        <div class="alert alert-notify alert-danger alert-dismissible fade show" role="alert" id="success-alert">
+            <span>{{ session('error') }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="cart-content">
-     
-        @if (Session::has('Carts'))
-            <form action="{{route('updateCart')}}" method="POST">
+        @if ($cart->items->isNotEmpty())
+            <form action="{{ route('cart.update') }}" method="POST">
                 @csrf
                 <div class="title-head">
                     Giỏ Hàng Của Bạn
                 </div>
                 <div class="block">
                     <div class="block-product">
-                        <h4>Hàng Có Sẵn </h4>
-                        @foreach (Session::get('Carts') as $cart)
+                        <h4>Hàng Có Sẵn</h4>
+                        @foreach ($cart->items as $index => $item)
                             @php
-                                $p = $cart->product->gia_moi;
-                                $q = $cart->quantity;
+                                $p = $item->product->gia_moi;
+                                $q = $item->quantity;
                                 $subtotal = $p * $q;
                             @endphp
                             <div class="added">
                                 <div class="img-pro">
-                                    <img src="{{ asset('frontend/images/' . $cart->product->hinh_sanpham) }}" alt="">
+                                    <img src="{{ asset('frontend/images/' . $item->product->hinh_sanpham) }}" alt="">
                                 </div>
                                 <div class="info">
                                     <a class="name">
                                         <small>Có sẵn</small>
-                                        {{ $cart->product->ten_sanpham }}
+                                        {{ $item->product->ten_sanpham }}
                                     </a>
                                 </div>
                                 <div class="preserve">
@@ -53,13 +51,13 @@
                                     <div class="quality">
                                         <div class="qualityum">
                                             <i class="noselect minus">-</i>
-                                            <input type="text" name="quantity[]" class="soluong quantity" id="soluong quantity" value="{{ $cart->quantity }}" />
+                                            <input type="text" name="quantity[{{ $index }}]" class="soluong quantity" id="soluong_quantity_{{ $index }}" value="{{ $item->quantity }}" />
                                             <i class="noselect plus">+</i>
                                         </div>
                                     </div>
                                 </div>
                                 <span class="removeItem">
-                                    <a href="{{route('removeItem',['id_sanpham'=>$cart->product->id_sanpham])}}">X</a>
+                                    <a href="{{ route('cart.remove', $item->product->id_sanpham) }}">X</a>
                                 </span>
                             </div>
                         @endforeach
@@ -76,10 +74,9 @@
                 </div>
                 <div class="phi_gh">
                     @php
-                        $temp = Session::get('Carts');
-                        $total = array_sum(array_map(function($cart) {
-                            return $cart->quantity * $cart->product->gia_moi;
-                        }, $temp));
+                        $total = $cart->items->sum(function ($item) {
+                            return $item->quantity * $item->product->gia_moi;
+                        });
                     @endphp
                     <div class="tamtinh">
                         Thành tiền:
@@ -87,14 +84,14 @@
                     <div class="money_tamtinh">{{ number_format($total, 0, ',', '.') }}₫</div>
                 </div>
                 <div class="updatecart">
-                    <a href="">
-                        <i class="fas fa-backward"></i> 
+                    <a href="{{ route('home') }}">
+                        <i class="fas fa-backward"></i>
                         Tiếp tục mua hàng
                     </a>
                     <input type="submit" value="Cập nhật giỏ hàng" class="btns btn--primary">
                 </div>
                 <div class="order-btn">
-                    <a href="{{route('checkOut')}}" class="btns btn--primary btn-ord">ĐẶT HÀNG</a>
+                    <a href="{{ route('checkout') }}" class="btns btn--primary btn-ord">ĐẶT HÀNG</a>
                     <a onclick="opencart()" class="remove-cart">
                         <i class="fa fa-trash"></i>
                         Xóa giỏ hàng
@@ -114,7 +111,7 @@
             <h2>Bạn có muốn xóa hết sản phẩm?</h2>
         </div>
         <div class="modal-cart-body">
-            <a href="{{route('clearCart')}}" onclick="toast()">Xóa</a>
+            <a href="{{ route('cart.clear') }}" onclick="toast()">Xóa</a>
             <a onclick="closecart()">Hủy</a>
         </div>
     </div>
@@ -124,20 +121,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script type="text/javascript">
-
-
-  // Tự động tắt thông báo sau 3 giây
-  setTimeout(function () {
-            let alert = document.getElementById('success-alert');
-            if (alert) {
-                alert.classList.remove('show'); // Ẩn thông báo
-                alert.classList.add('fade');   // Tạo hiệu ứng mờ dần
-            }
-        }, 3000); // 3 giây
+    // Tự động tắt thông báo sau 3 giây
+    setTimeout(function () {
+        let alert = document.getElementById('success-alert');
+        if (alert) {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+        }
+    }, 3000);
 
     const plus = document.querySelectorAll(".plus"),
-        minus = document.querySelectorAll(".minus"),
-        num = document.querySelectorAll(".quantity");
+          minus = document.querySelectorAll(".minus"),
+          num = document.querySelectorAll(".quantity");
     for (let i = 0; i < plus.length; i++) {
         let b = parseInt(num[i].value);
         plus[i].addEventListener("click", () => {
@@ -175,8 +170,5 @@
             }
         });
     });
-   
-      
-
 </script>
 @endsection

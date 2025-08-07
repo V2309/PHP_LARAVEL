@@ -24,7 +24,7 @@ class BlogController extends Controller
     // hien len home page
     public function getBlogs()
     {
-    $blogs = Blog::latest()->take(3)->get(); // Lấy 5 blog mới nhất
+    $blogs = Blog::latest()->take(3)->get(); 
     return view('includes.blog_includes', compact('blogs'));
     }
     public function blogDetail( $id)

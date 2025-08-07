@@ -29,7 +29,7 @@
                 <div class="grid">
                     <nav class="header__navbar">
                         <ul class="navbar-list">
-                            <li class="navbar-item"><a href="{{URL::to('/trangchu')}}" class="navbar-item__link hover-under-anima" >Trang chủ</a></li>
+                            <li class="navbar-item"><a href="{{URL::to('/home')}}" class="navbar-item__link hover-under-anima" >Trang chủ</a></li>
                             <li class="navbar-item"><a href="" class="navbar-item__link " >Chọn cửa hàng gần bạn</a></li>
                             <li class="navbar-item">
                                 <span class="navbar-no-cursor">Kết nối</span>
@@ -461,7 +461,7 @@
                         <h4>STORE INFORMATION</h4>
                         <ul class="list-ft__text">
                             <li class="ft__item"><a href="#"><i class="fa fa-location-dot" style="margin-right: 5px;"></i>233 Nguyễn Tất Thành , Hồ Chí Minh</a></li>
-                            <li class="ft__item"><a href="#"><i class="ti-email" style="margin-right: 5px;"></i>Email Us: Vanan2309@gmail.com</a></li>
+                            <li class="ft__item"><a href="#"><i class="ti-email" style="margin-right: 5px;"></i>Email Us: hvan3243@gmailgmail.com</a></li>
                             <li class="ft__item"><a href="#"><i class="fas fa-phone" style="margin-right: 5px;"></i>0795720147</a></li>
 
                         </ul>
@@ -482,7 +482,7 @@
         </div>
     </div>
 
-    
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 
     <script src="{{asset('frontend/js/jquery-3.4.1.min.js')}}"></script>
     <script src="{{asset('frontend/js/bootstrap.min.js')}}"></script>
